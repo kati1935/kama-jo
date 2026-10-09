@@ -203,7 +203,7 @@ function openProductModal(id) {
         colorContainer.appendChild(badge);
     });
 
-    const initialColorName = prod.colors[0] ? prod.colors[0].name : "Черный";
+    const initialColorName = prod.colors ? prod.colors.name : "Черный";
     document.getElementById('selectedColorText').innerText = initialColorName;
     document.getElementById('specColor').innerText = initialColorName;
 
@@ -259,7 +259,7 @@ function moveSlide(direction) {
 function selectColor(index) {
     activeColorIndex = index;
     activeSlideIndex = 0;
-    
+
     const badges = document.querySelectorAll('#colorPickerContainer .color-badge');
     badges.forEach((badge, idx) => {
         if (idx === index) badge.classList.add('active');
@@ -267,11 +267,13 @@ function selectColor(index) {
     });
 
     const prod = productsData[activeProductId];
-    document.getElementById('selectedColorText').innerText = prod.colors[index].name;
-    document.getElementById('specColor').innerText = prod.colors[index].name;
+    if (prod && prod.colors && prod.colors[index]) {
+        document.getElementById('selectedColorText').innerText = prod.colors[index].name;
+        document.getElementById('specColor').innerText = prod.colors[index].name;
+    }
     
     buildGallery();
-    updateModalActionButton(); 
+    updateModalActionButton();
 }
 
 function selectSize(size, element) {
@@ -284,7 +286,6 @@ function selectSize(size, element) {
     
     updateModalActionButton(); 
 }
-
 function toggleDescription() {
     const block = document.getElementById('descMoreBlock');
     const btn = document.getElementById('readMoreBtn');
@@ -425,7 +426,7 @@ function openFavoritesModal() {
 }
 function closeFavoritesModal() { hideOverlay('favoritesModal'); }
 
-// Функция отправки заказа через стабильный CORS-прокси шлюз AllOrigins
+// Функция отправки заказа через стабильный CORS-прокси шлюз AllOrigins без конфликтов кавычек
 function sendOrder(event) {
     event.preventDefault();
     const name = document.getElementById('cName').value;
@@ -446,15 +447,17 @@ function sendOrder(event) {
     const TELEGRAM_CHAT_ID = '1415007205';
     const MY_EMAIL = 'kama.brand.shop@mail.ru'; 
 
-    const text = `🛍️ НОВЫЙ ЗАКАЗ\n\n👤 Имя: ${name}\n📞 Telephone: ${phone}\n✈️ Профиль ТГ: t.me/${tgUsername}\n📧 E-mail клиента: ${clientEmail}\n📍 Адрес: ${address}\n\n📦 Товары:${productsText}\n\n💰 Итого: ${total.toLocaleString()} ₽`;
+    const text = `🛍️ НОВЫЙ ЗАКАЗ\n\n👤 Имя: ${name}\n📞 Телефон: ${phone}\n✈️ Профиль ТГ: t.me/${tgUsername}\n📧 E-mail клиента: ${clientEmail}\n📍 Адрес: ${address}\n\n📦 Товары:${productsText}\n\n💰 Итого: ${total.toLocaleString()} ₽`;
 
-    // Формируем прямую ссылку запроса к API Telegram
-    const tgApiUrl = `https://telegram.org{TELEGRAM_BOT_TOKEN}/sendMessage?chat_id=${TELEGRAM_CHAT_ID}&text=${encodeURIComponent(text)}`;
+    const params = new URLSearchParams({
+        chat_id: TELEGRAM_CHAT_ID,
+        text: text
+    });
+
+    const tgApiUrl = `https://telegram.org{TELEGRAM_BOT_TOKEN}/sendMessage?${params.toString()}`;
     
-    // Прогоняем её через открытый шлюз AllOrigins, который обходит CORS-блокировки
     fetch(`https://allorigins.win{encodeURIComponent(tgApiUrl)}`)
-    .then(response => {
-        // Вызываем дублирование письма на почту
+    .then(() => {
         const subject = `Новый заказ от ${name}`;
         const mailBody = `Привет! Оформлен новый заказ.\n\nДанные покупателя:\nИмя: ${name}\nТелефон: ${phone}\nTelegram: @${tgUsername}\nE-mail: ${clientEmail}\nАдрес: ${address}\n\nСостав заказа:${productsText}\n\nИтого: ${total.toLocaleString()} ₽`;
         window.location.href = `mailto:${MY_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(mailBody)}`;
@@ -469,7 +472,8 @@ function sendOrder(event) {
         if (typeof closeOrderModal === 'function') closeOrderModal();
     })
     .catch(error => {
-        console.error('Ошибка шлюза:', error);
+        console.error('Ошибка отправки:', error);
         window.location.href = `mailto:${MY_EMAIL}?subject=Заказ&body=${encodeURIComponent(text)}`;
     });
 }
+

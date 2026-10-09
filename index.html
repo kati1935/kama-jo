@@ -70,27 +70,37 @@
 
     <!-- ВСПЛЫВАЮЩИЕ ОКНА -->
 
-        <!-- Модалка оформления заказа (ИСПРАВЛЕНА) -->
-    <div class="overlay hidden" id="orderModal" onclick="closeOrderModal()">
-        <div class="modal" onclick="event.stopPropagation();">
-            <div style="font-weight:bold; font-size:18px; margin-bottom:15px;">📦 Оформление доставки</div>
-            <form onsubmit="sendOrder(event)">
-                <div class="group"><label>Ваше Имя</label><input type="text" id="cName" required></div>
-                <div class="group"><label>Телефон</label><input type="tel" id="cPhone" required></div>
-                <div class="group"><label>Ваш Telegram (например, @username)</label><input type="text" id="cTelegram" placeholder="@username" required></div>
-                <div class="group"><label>Ваш E-mail</label><input type="email" id="cEmail" placeholder="example@mail.ru" required></div>
-                <div class="group"><label>Адрес (СДЭК/Почта)</label><textarea id="cAdr" required></textarea></div>
-                
-                <!-- Кнопка теперь строго внутри тега </form> -->
-                <button type="submit" class="s-btn">Подтвердить заказ</button>
-                <div class="close" onclick="closeOrderModal()">Вернуться назад</div>
-            </form>
-        </div>
-    </div>
+    <!-- Детальное меню товара -->
+    <div class="overlay hidden" id="productModal" onclick="closeProductModal()">
+        <div class="modal product-detail-modal" onclick="event.stopPropagation();">
+            <div class="modal-nav-top">
+                <button class="back-btn" onclick="closeProductModal()">❮ Назад</button>
+                <button class="modal-fav-btn" id="modalFavBtn">♥</button>
+            </div>
 
+            <div class="modal-slider">
+                <div class="modal-slides" id="modalSlides"></div>
+                <button class="slide-nav prev" onclick="moveSlide(-1)">❮</button>
+                <button class="slide-nav next" onclick="moveSlide(1)">❯</button>
+            </div>
 
+            <div class="option-section" id="colorSection">
+                <div class="section-title">Цвет: <span id="selectedColorText">Черный</span></div>
+                <div class="color-picker" id="colorPickerContainer"></div>
+            </div>
 
-            <!-- Информация и Описание товара -->
+            <div class="option-section">
+                <div class="section-title">Размер одежды: <span id="selectedSizeText">XS</span></div>
+                <div class="size-picker">
+                    <button class="size-btn active" onclick="selectSize('XS', this)">XS</button>
+                    <button class="size-btn" onclick="selectSize('S', this)">S</button>
+                    <button class="size-btn" onclick="selectSize('M', this)">M</button>
+                    <button class="size-btn" onclick="selectSize('L', this)">L</button>
+                    <button class="size-btn" onclick="selectSize('XL', this)">XL</button>
+                </div>
+                <button class="sizes-table-btn">РАЗМЕРЫ</button>
+            </div>
+
             <div class="modal-product-info">
                 <h2 id="modalProductTitle">Название товара</h2>
                 <div class="modal-product-price" id="modalProductPrice">0 ₽</div>
@@ -102,7 +112,6 @@
                     <button class="read-more-btn" id="readMoreBtn" onclick="toggleDescription()">Читать дальше ❯</button>
                 </div>
 
-                <!-- Технические характеристики -->
                 <div class="tech-specs">
                     <h3>Техническая спецификация</h3>
                     <div class="spec-row"><span>Цвет</span><span id="specColor">Черный</span></div>
@@ -110,7 +119,6 @@
                 </div>
             </div>
 
-            <!-- Нижняя кнопка покупки -->
             <div class="modal-action-wrapper">
                 <button class="modal-main-action-btn" id="modalActionBtn" onclick="handleModalAction()">Добавить в корзину</button>
             </div>
@@ -127,7 +135,7 @@
         </div>
     </div>
 
-    <!-- Модалка просмотра корзины (Вместо пустого оформления заказа) -->
+    <!-- Модалка просмотра корзины -->
     <div class="overlay hidden" id="cartModal" onclick="closeCartModal()">
         <div class="modal" onclick="event.stopPropagation();">
             <div style="font-weight:bold; font-size:18px; margin-bottom:15px;">🛍️ Ваша корзина</div>
@@ -140,15 +148,18 @@
         </div>
     </div>
 
-    <!-- Модалка оформления заказа -->
+    <!-- Модалка оформления заказа (Исправленная структура тегов) -->
     <div class="overlay hidden" id="orderModal" onclick="closeOrderModal()">
         <div class="modal" onclick="event.stopPropagation();">
             <div style="font-weight:bold; font-size:18px; margin-bottom:15px;">📦 Оформление доставки</div>
-            <form onsubmit="sendOrder(event)">
+            <form id="orderForm" onsubmit="sendOrder(event)">
                 <div class="group"><label>Ваше Имя</label><input type="text" id="cName" required></div>
                 <div class="group"><label>Телефон</label><input type="tel" id="cPhone" required></div>
+                <div class="group"><label>Ваш Telegram (например, @username)</label><input type="text" id="cTelegram" placeholder="@username" required></div>
+                <div class="group"><label>Ваш E-mail</label><input type="email" id="cEmail" placeholder="example@mail.ru" required></div>
                 <div class="group"><label>Адрес (СДЭК/Почта)</label><textarea id="cAdr" required></textarea></div>
-                <button type="submit" class="s-btn">Подтвердить заказ</button>
+                
+                <button type="submit" class="s-btn" style="margin-top:10px;">Подтвердить заказ</button>
                 <div class="close" onclick="closeOrderModal()">Вернуться назад</div>
             </form>
         </div>
@@ -161,7 +172,6 @@
         <button class="nav-item" onclick="openCartModal()"><span class="nav-icon">🛍️</span>Корзина</button>
     </div>
 
-    <!-- Всплывающая кнопка оформления -->
     <div class="bar" id="bar">
         <button class="b-btn" onclick="openOrderModal()">
             <span>Оформить заказ</span>

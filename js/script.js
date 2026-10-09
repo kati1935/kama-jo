@@ -259,7 +259,7 @@ function moveSlide(direction) {
 function selectColor(index) {
     activeColorIndex = index;
     activeSlideIndex = 0;
-
+    
     const badges = document.querySelectorAll('#colorPickerContainer .color-badge');
     badges.forEach((badge, idx) => {
         if (idx === index) badge.classList.add('active');
@@ -286,6 +286,7 @@ function selectSize(size, element) {
     
     updateModalActionButton(); 
 }
+
 function toggleDescription() {
     const block = document.getElementById('descMoreBlock');
     const btn = document.getElementById('readMoreBtn');
@@ -426,7 +427,6 @@ function openFavoritesModal() {
 }
 function closeFavoritesModal() { hideOverlay('favoritesModal'); }
 
-// Функция отправки заказа через стабильный CORS-прокси шлюз AllOrigins без конфликтов кавычек
 function sendOrder(event) {
     event.preventDefault();
     const name = document.getElementById('cName').value;
@@ -449,15 +449,15 @@ function sendOrder(event) {
 
     const text = `🛍️ НОВЫЙ ЗАКАЗ\n\n👤 Имя: ${name}\n📞 Телефон: ${phone}\n✈️ Профиль ТГ: t.me/${tgUsername}\n📧 E-mail клиента: ${clientEmail}\n📍 Адрес: ${address}\n\n📦 Товары:${productsText}\n\n💰 Итого: ${total.toLocaleString()} ₽`;
 
-    const params = new URLSearchParams({
-        chat_id: TELEGRAM_CHAT_ID,
-        text: text
-    });
+    const formData = new FormData();
+    formData.append('chat_id', TELEGRAM_CHAT_ID);
+    formData.append('text', text);
 
-    const tgApiUrl = `https://telegram.org{TELEGRAM_BOT_TOKEN}/sendMessage?${params.toString()}`;
-    
-    fetch(`https://allorigins.win{encodeURIComponent(tgApiUrl)}`)
-    .then(() => {
+    fetch(`https://telegram.org{TELEGRAM_BOT_TOKEN}/sendMessage`, {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => {
         const subject = `Новый заказ от ${name}`;
         const mailBody = `Привет! Оформлен новый заказ.\n\nДанные покупателя:\nИмя: ${name}\nТелефон: ${phone}\nTelegram: @${tgUsername}\nE-mail: ${clientEmail}\nАдрес: ${address}\n\nСостав заказа:${productsText}\n\nИтого: ${total.toLocaleString()} ₽`;
         window.location.href = `mailto:${MY_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(mailBody)}`;
@@ -476,4 +476,3 @@ function sendOrder(event) {
         window.location.href = `mailto:${MY_EMAIL}?subject=Заказ&body=${encodeURIComponent(text)}`;
     });
 }
-

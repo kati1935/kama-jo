@@ -444,7 +444,7 @@ function sendOrder(event) {
     const TELEGRAM_CHAT_ID = '1415007205';
     const MY_EMAIL = 'kama.brand.shop@mail.ru'; 
 
-    // Формируем простой текст БЕЗ спецсимволов Markdown, чтобы кавычки не ломались
+    // Формируем чистый и простой текст без использования спецсимволов Markdown
     const text = `🛍️ НОВЫЙ ЗАКАЗ\n\n` +
                  `👤 Имя: ${name}\n` +
                  `📞 Телефон: ${phone}\n` +
@@ -454,13 +454,13 @@ function sendOrder(event) {
                  `📦 Товары:${productsText}\n\n` +
                  `💰 Итого: ${total.toLocaleString()} ₽`;
 
-    // Железобетонный прокси-шлюз allorigins без конфликтов кавычек в URL
+    // Самый надежный CORS-прокси шлюз AllOrigins без конфликтов кавычек в URL
     const targetUrl = `https://telegram.org{TELEGRAM_BOT_TOKEN}/sendMessage?chat_id=${TELEGRAM_CHAT_ID}&text=${encodeURIComponent(text)}`;
     
     fetch(`https://allorigins.win{encodeURIComponent(targetUrl)}`)
     .then(response => {
         if (response.ok) {
-            // Дублирование на почту
+            // Подготовка дублирования на почту
             const subject = `Новый заказ от ${name}`;
             const mailBody = `Привет! Оформлен новый заказ.\n\nДанные покупателя:\nИмя: ${name}\nТелефон: ${phone}\nTelegram: @${tgUsername}\nE-mail: ${clientEmail}\nАдрес: ${address}\n\nСостав заказа:${productsText}\n\nИтого: ${total.toLocaleString()} ₽`;
             window.location.href = `mailto:${MY_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(mailBody)}`;
@@ -474,7 +474,7 @@ function sendOrder(event) {
             if (typeof updateCart === 'function') updateCart();
             if (typeof closeOrderModal === 'function') closeOrderModal();
         } else {
-            alert(`Ошибка шлюза Telegram. Будет открыта почта.`);
+            alert(`Ошибка отправки. Будет открыта почта.`);
             window.location.href = `mailto:${MY_EMAIL}?subject=Заказ&body=${encodeURIComponent(text)}`;
         }
     })

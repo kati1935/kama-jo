@@ -429,8 +429,8 @@ function sendOrder(event) {
     event.preventDefault();
     const name = document.getElementById('cName').value;
     const phone = document.getElementById('cPhone').value;
-    const tgUsername = document.getElementById('cTelegram').value.replace('@', ''); // убираем @, если ввели с ним
-    const clientEmail = document.getElementById('cEmail').value; // Забираем e-mail клиента
+    const tgUsername = document.getElementById('cTelegram').value.replace('@', ''); 
+    const clientEmail = document.getElementById('cEmail').value;
     const address = document.getElementById('cAdr').value;
 
     let productsText = "";
@@ -441,24 +441,24 @@ function sendOrder(event) {
         total += item.price * item.qty;
     }
 
-    // ==== ВАШИ НАСТРОЙКИ ====
+    // ==== ВАШИ ПРОВЕРЕННЫЕ ДАННЫЕ ====
     const TELEGRAM_BOT_TOKEN = '8680387241:AAE4HzCntMS-7t1wRRM17ZYlMwpdF3p-HJg';
     const TELEGRAM_CHAT_ID = '1415007205';
-    const MY_EMAIL = 'kama.brand.shop@mail.ru';
+    const MY_EMAIL = 'kama.brand.shop@mail.ru'; 
     // ===================================
 
-    // Формируем красивый текст для Telegram (Markdown) с добавлением E-mail
+    // Формируем текст
     const tgText = `🛍️ *НОВЫЙ ЗАКАЗ*\n\n` +
-        `👤 *Имя:* ${name}\n` +
-        `📞 *Телефон:* ${phone}\n` +
-        `✈️ *Профиль ТГ:* [@${tgUsername}](https://t.me{tgUsername})\n` +
-        `📧 *E-mail клиента:* ${clientEmail}\n` +
-        `📍 *Адрес:* ${address}\n\n` +
-        `📦 *Товары:*${productsText}\n\n` +
-        `💰 *Итого:* ${total.toLocaleString()} ₽`;
+                   `👤 *Имя:* ${name}\n` +
+                   `📞 *Телефон:* ${phone}\n` +
+                   `✈️ *Профиль ТГ:* [@${tgUsername}](https://t.me{tgUsername})\n` +
+                   `📧 *E-mail клиента:* ${clientEmail}\n` +
+                   `📍 *Адрес:* ${address}\n\n` +
+                   `📦 *Товары:*${productsText}\n\n` +
+                   `💰 *Итого:* ${total.toLocaleString()} ₽`;
 
-    // 1. Автоматическая тихая отправка в Telegram через POST
-    fetch(`https://telegram.org{TELEGRAM_BOT_TOKEN}/sendMessage`, {
+    // Отправляем через глобальный стабильный шлюз tgproxy.net
+    fetch(`https://tgproxy.net{TELEGRAM_BOT_TOKEN}/sendMessage`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -469,26 +469,29 @@ function sendOrder(event) {
             parse_mode: 'Markdown'
         })
     })
-        .then(response => {
-            // 2. Параллельно подготавливаем дублирование на почту
+    .then(response => {
+        if (response.ok) {
+            // Параллельный вызов почты для дублирования
             const subject = `Новый заказ от ${name}`;
-            const mailBody = `Привет! Оформлен новый заказ.\n\nДанные покупателя:\nИмя: ${name}\nТелефон: ${phone}\nTelegram: @${tgUsername}\nE-mail клиента: ${clientEmail}\nАдрес: ${address}\n\nСостав заказа:${productsText}\n\nИтого: ${total.toLocaleString()} ₽`;
+            const mailBody = `Привет! Оформлен новый заказ.\n\nДанные покупателя:\nИмя: ${name}\nТелефон: ${phone}\nTelegram: @${tgUsername}\nE-mail: ${clientEmail}\nАдрес: ${address}\n\nСостав заказа:${productsText}\n\nИтого: ${total.toLocaleString()} ₽`;
             window.location.href = `mailto:${MY_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(mailBody)}`;
 
-            // Успешный финал на сайте
-            alert(`Спасибо, ${name}! Заказ успешно отправлен менеджеру в Telegram.`);
-
-            // Полностью очищаем корзину на сайте
+            alert(`Спасибо, ${name}! Заказ успешно оформлен и отправлен в Telegram.`);
+            
             cart = {};
             for (let id in productsData) {
                 if (typeof syncCardUI === 'function') syncCardUI(id);
             }
             if (typeof updateCart === 'function') updateCart();
             if (typeof closeOrderModal === 'function') closeOrderModal();
-        })
-        .catch(error => {
-            console.error('Ошибка автоматики:', error);
-            alert('Произошла ошибка автоматической отправки. Мы откроем окно почты для ручной отправки.');
+        } else {
+            // Если и этот шлюз вернул ошибку, выводим её статус
+            alert(`Ошибка сервера Telegram (Код: ${response.status}). Будет открыта форма почты.`);
             window.location.href = `mailto:${MY_EMAIL}?subject=Заказ&body=${encodeURIComponent(tgText)}`;
-        });
+        }
+    })
+    .catch(error => {
+        console.error('Ошибка автоматики:', error);
+        window.location.href = `mailto:${MY_EMAIL}?subject=Заказ&body=${encodeURIComponent(tgText)}`;
+    });
 }

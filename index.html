@@ -70,24 +70,24 @@
 
     <!-- ВСПЛЫВАЮЩИЕ ОКНА -->
 
-    <!-- Детальное меню товара -->
+        <!-- Модалка оформления заказа (ИСПРАВЛЕНА) -->
     <div class="overlay hidden" id="orderModal" onclick="closeOrderModal()">
-    <div class="modal" onclick="event.stopPropagation();">
-        <div style="font-weight:bold; font-size:18px; margin-bottom:15px;">📦 Оформление доставки</div>
-        <form onsubmit="sendOrder(event)">
-            <div class="group"><label>Ваше Имя</label><input type="text" id="cName" required></div>
-            <div class="group"><label>Телефон</label><input type="tel" id="cPhone" required></div>
-            <div class="group"><label>Ваш Telegram (например, @username)</label><input type="text" id="cTelegram" placeholder="@username" required></div>
-            
-            <!-- НОВОЕ ПОЛЕ: E-mail клиента -->
-            <div class="group"><label>Ваш E-mail</label><input type="email" id="cEmail" placeholder="example@mail.ru" required></div>
-            
-            <div class="group"><label>Адрес (СДЭК/Почта)</label><textarea id="cAdr" required></textarea></div>
-            <button type="submit" class="s-btn">Подтвердить заказ</button>
-            <div class="close" onclick="closeOrderModal()">Вернуться назад</div>
-        </form>
+        <div class="modal" onclick="event.stopPropagation();">
+            <div style="font-weight:bold; font-size:18px; margin-bottom:15px;">📦 Оформление доставки</div>
+            <form onsubmit="sendOrder(event)">
+                <div class="group"><label>Ваше Имя</label><input type="text" id="cName" required></div>
+                <div class="group"><label>Телефон</label><input type="tel" id="cPhone" required></div>
+                <div class="group"><label>Ваш Telegram (например, @username)</label><input type="text" id="cTelegram" placeholder="@username" required></div>
+                <div class="group"><label>Ваш E-mail</label><input type="email" id="cEmail" placeholder="example@mail.ru" required></div>
+                <div class="group"><label>Адрес (СДЭК/Почта)</label><textarea id="cAdr" required></textarea></div>
+                
+                <!-- Кнопка теперь строго внутри тега </form> -->
+                <button type="submit" class="s-btn">Подтвердить заказ</button>
+                <div class="close" onclick="closeOrderModal()">Вернуться назад</div>
+            </form>
+        </div>
     </div>
-</div>
+
 
 
             <!-- Информация и Описание товара -->

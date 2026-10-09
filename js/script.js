@@ -404,7 +404,7 @@ function openFavoritesModal() {
         favorites.forEach(id => {
             const prod = productsData[id];
             if (prod) {
-                const initialImg = prod.colors ? prod.colors[0].img : "img/corsetTie.jpg";
+                const initialImg = prod.colors ? prod.colors.img : "img/corsetTie.jpg";
                 const row = document.createElement('div');
                 row.className = 'fav-item-row';
                 row.innerHTML = `
@@ -424,6 +424,8 @@ function openFavoritesModal() {
     showOverlay('favoritesModal');
 }
 function closeFavoritesModal() { hideOverlay('favoritesModal'); }
+
+// Функция отправки заказа через стабильный CORS-прокси шлюз AllOrigins
 function sendOrder(event) {
     event.preventDefault();
     const name = document.getElementById('cName').value;
@@ -444,42 +446,30 @@ function sendOrder(event) {
     const TELEGRAM_CHAT_ID = '1415007205';
     const MY_EMAIL = 'kama.brand.shop@mail.ru'; 
 
-    // Формируем чистый и простой текст без использования спецсимволов Markdown
-    const text = `🛍️ НОВЫЙ ЗАКАЗ\n\n` +
-                 `👤 Имя: ${name}\n` +
-                 `📞 Телефон: ${phone}\n` +
-                 `✈️ Профиль ТГ: t.me/${tgUsername}\n` +
-                 `📧 E-mail клиента: ${clientEmail}\n` +
-                 `📍 Адрес: ${address}\n\n` +
-                 `📦 Товары:${productsText}\n\n` +
-                 `💰 Итого: ${total.toLocaleString()} ₽`;
+    const text = `🛍️ НОВЫЙ ЗАКАЗ\n\n👤 Имя: ${name}\n📞 Telephone: ${phone}\n✈️ Профиль ТГ: t.me/${tgUsername}\n📧 E-mail клиента: ${clientEmail}\n📍 Адрес: ${address}\n\n📦 Товары:${productsText}\n\n💰 Итого: ${total.toLocaleString()} ₽`;
 
-    // Самый надежный CORS-прокси шлюз AllOrigins без конфликтов кавычек в URL
-    const targetUrl = `https://telegram.org{TELEGRAM_BOT_TOKEN}/sendMessage?chat_id=${TELEGRAM_CHAT_ID}&text=${encodeURIComponent(text)}`;
+    // Формируем прямую ссылку запроса к API Telegram
+    const tgApiUrl = `https://telegram.org{TELEGRAM_BOT_TOKEN}/sendMessage?chat_id=${TELEGRAM_CHAT_ID}&text=${encodeURIComponent(text)}`;
     
-    fetch(`https://allorigins.win{encodeURIComponent(targetUrl)}`)
+    // Прогоняем её через открытый шлюз AllOrigins, который обходит CORS-блокировки
+    fetch(`https://allorigins.win{encodeURIComponent(tgApiUrl)}`)
     .then(response => {
-        if (response.ok) {
-            // Подготовка дублирования на почту
-            const subject = `Новый заказ от ${name}`;
-            const mailBody = `Привет! Оформлен новый заказ.\n\nДанные покупателя:\nИмя: ${name}\nТелефон: ${phone}\nTelegram: @${tgUsername}\nE-mail: ${clientEmail}\nАдрес: ${address}\n\nСостав заказа:${productsText}\n\nИтого: ${total.toLocaleString()} ₽`;
-            window.location.href = `mailto:${MY_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(mailBody)}`;
+        // Вызываем дублирование письма на почту
+        const subject = `Новый заказ от ${name}`;
+        const mailBody = `Привет! Оформлен новый заказ.\n\nДанные покупателя:\nИмя: ${name}\nТелефон: ${phone}\nTelegram: @${tgUsername}\nE-mail: ${clientEmail}\nАдрес: ${address}\n\nСостав заказа:${productsText}\n\nИтого: ${total.toLocaleString()} ₽`;
+        window.location.href = `mailto:${MY_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(mailBody)}`;
 
-            alert(`Спасибо, ${name}! Заказ успешно оформлен и отправлен менеджеру в Telegram.`);
-            
-            cart = {};
-            for (let id in productsData) {
-                if (typeof syncCardUI === 'function') syncCardUI(id);
-            }
-            if (typeof updateCart === 'function') updateCart();
-            if (typeof closeOrderModal === 'function') closeOrderModal();
-        } else {
-            alert(`Ошибка отправки. Будет открыта почта.`);
-            window.location.href = `mailto:${MY_EMAIL}?subject=Заказ&body=${encodeURIComponent(text)}`;
+        alert(`Спасибо, ${name}! Заказ успешно оформлен и отправлен менеджеру в Telegram.`);
+        
+        cart = {};
+        for (let id in productsData) {
+            if (typeof syncCardUI === 'function') syncCardUI(id);
         }
+        if (typeof updateCart === 'function') updateCart();
+        if (typeof closeOrderModal === 'function') closeOrderModal();
     })
     .catch(error => {
-        console.error('Ошибка отправки:', error);
+        console.error('Ошибка шлюза:', error);
         window.location.href = `mailto:${MY_EMAIL}?subject=Заказ&body=${encodeURIComponent(text)}`;
     });
 }

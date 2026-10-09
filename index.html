@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brand Shop</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="js/script.js" defer></script>
+</head>
+<body>
+    <!-- Шапка интернет-магазина -->
+    <div class="header">
+        <h1>MY BRAND</h1>
+        <p>Одежда ручной работы</p>
+    </div>
+
+    <!-- Блок мобильной сортировки -->
+    <div class="sort-container">
+        <button class="sort-trigger-btn" onclick="toggleSortMenu()">
+            <span class="sort-icon">⇅</span> Сортировать по
+        </button>
+        <div class="sort-dropdown" id="sortDropdown">
+            <div class="sort-option active" onclick="sortProducts('default', this)">По умолчанию</div>
+            <div class="sort-option" onclick="sortProducts('new', this)">Новинки</div>
+            <div class="sort-option" onclick="sortProducts('low-high', this)">По возрастанию цены</div>
+            <div class="sort-option" onclick="sortProducts('high-low', this)">По убыванию цены</div>
+        </div>
+    </div>
+
+    <!-- Сетка товаров -->
+    <div class="grid" id="productsGrid">
+        <!-- ТОВАР 1: Корсет Tie -->
+        <div class="card" data-id="1" data-name="корсет Tie" data-price="9000" onclick="openProductModal('1')">
+            <button class="fav-btn" onclick="event.stopPropagation(); toggleFavorite('1')">♥</button>
+            <div class="img-wrapper">
+                <img src="img/corsetTie.jpg" class="img" alt="корсет Tie">
+            </div>
+            <div class="info">
+                <div class="price">9 000 ₽</div>
+                <div class="title">корсет Tie</div>
+                <div class="item-color-hint">Черный</div>
+                <button class="btn" onclick="event.stopPropagation(); addToCart('1')">В корзину</button>
+                <div class="counter" id="counter-1" onclick="event.stopPropagation();">
+                    <button class="q-btn" onclick="changeQty('1', -1)">-</button>
+                    <span id="qty-1">1</span>
+                    <button class="q-btn" onclick="changeQty('1', 1)">+</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ТОВАР 2: Блуза -->
+        <div class="card" data-id="2" data-name="Блуза KAMA'JO SILK SHINE" data-price="4100" onclick="openProductModal('2')">
+            <button class="fav-btn" onclick="event.stopPropagation(); toggleFavorite('2')">♥</button>
+            <div class="img-wrapper">
+                <img src="img/bluse1.jpg" class="img" alt="Блуза">
+            </div>
+            <div class="info">
+                <div class="price">4 100 ₽ <span class="old-price">4 900 ₽</span></div>
+                <div class="title">Блуза с корсетной посадкой "KAMA'JO SILK..."</div>
+                <div class="item-color-hint">Черный</div>
+                <button class="btn" onclick="event.stopPropagation(); addToCart('2')">В корзину</button>
+                <div class="counter" id="counter-2" onclick="event.stopPropagation();">
+                    <button class="q-btn" onclick="changeQty('2', -1)">-</button>
+                    <span id="qty-2">1</span>
+                    <button class="q-btn" onclick="changeQty('2', 1)">+</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ВСПЛЫВАЮЩИЕ ОКНА -->
+
+    <!-- Детальное меню товара -->
+    <div class="overlay hidden" id="orderModal" onclick="closeOrderModal()">
+    <div class="modal" onclick="event.stopPropagation();">
+        <div style="font-weight:bold; font-size:18px; margin-bottom:15px;">📦 Оформление доставки</div>
+        <form onsubmit="sendOrder(event)">
+            <div class="group"><label>Ваше Имя</label><input type="text" id="cName" required></div>
+            <div class="group"><label>Телефон</label><input type="tel" id="cPhone" required></div>
+            <div class="group"><label>Ваш Telegram (например, @username)</label><input type="text" id="cTelegram" placeholder="@username" required></div>
+            
+            <!-- НОВОЕ ПОЛЕ: E-mail клиента -->
+            <div class="group"><label>Ваш E-mail</label><input type="email" id="cEmail" placeholder="example@mail.ru" required></div>
+            
+            <div class="group"><label>Адрес (СДЭК/Почта)</label><textarea id="cAdr" required></textarea></div>
+            <button type="submit" class="s-btn">Подтвердить заказ</button>
+            <div class="close" onclick="closeOrderModal()">Вернуться назад</div>
+        </form>
+    </div>
+</div>
+
+
+            <!-- Информация и Описание товара -->
+            <div class="modal-product-info">
+                <h2 id="modalProductTitle">Название товара</h2>
+                <div class="modal-product-price" id="modalProductPrice">0 ₽</div>
+                
+                <div class="description-block">
+                    <h3>Описание товара</h3>
+                    <p id="modalProductDesc">Основное описание...</p>
+                    <div class="desc-more" id="descMoreBlock" style="display: none;"></div>
+                    <button class="read-more-btn" id="readMoreBtn" onclick="toggleDescription()">Читать дальше ❯</button>
+                </div>
+
+                <!-- Технические характеристики -->
+                <div class="tech-specs">
+                    <h3>Техническая спецификация</h3>
+                    <div class="spec-row"><span>Цвет</span><span id="specColor">Черный</span></div>
+                    <div class="spec-row"><span>Размер одежды</span><span id="specSize">XS</span></div>
+                </div>
+            </div>
+
+            <!-- Нижняя кнопка покупки -->
+            <div class="modal-action-wrapper">
+                <button class="modal-main-action-btn" id="modalActionBtn" onclick="handleModalAction()">Добавить в корзину</button>
+            </div>
+            <div class="close-txt-btn" onclick="closeProductModal()">Закрыть</div>
+        </div>
+    </div>
+
+    <!-- Модалка списка избранного -->
+    <div class="overlay hidden" id="favoritesModal" onclick="closeFavoritesModal()">
+        <div class="modal" onclick="event.stopPropagation();">
+            <div style="font-weight:bold; font-size:18px; margin-bottom:15px;">♥ Избранные товары</div>
+            <div id="favoritesListContainer"></div>
+            <div class="close" onclick="closeFavoritesModal()">Закрыть</div>
+        </div>
+    </div>
+
+    <!-- Модалка просмотра корзины (Вместо пустого оформления заказа) -->
+    <div class="overlay hidden" id="cartModal" onclick="closeCartModal()">
+        <div class="modal" onclick="event.stopPropagation();">
+            <div style="font-weight:bold; font-size:18px; margin-bottom:15px;">🛍️ Ваша корзина</div>
+            <div id="cartListContainer"></div>
+            <div style="margin-top:20px; text-align:right; font-weight:bold; font-size:16px;">
+                Итого: <span id="cartModalTotal">0 ₽</span>
+            </div>
+            <button class="s-btn" style="margin-top:15px;" onclick="closeCartModal(); openOrderModal();">Перейти к оформлению</button>
+            <div class="close" onclick="closeCartModal()">Закрыть корзину</div>
+        </div>
+    </div>
+
+    <!-- Модалка оформления заказа -->
+    <div class="overlay hidden" id="orderModal" onclick="closeOrderModal()">
+        <div class="modal" onclick="event.stopPropagation();">
+            <div style="font-weight:bold; font-size:18px; margin-bottom:15px;">📦 Оформление доставки</div>
+            <form onsubmit="sendOrder(event)">
+                <div class="group"><label>Ваше Имя</label><input type="text" id="cName" required></div>
+                <div class="group"><label>Телефон</label><input type="tel" id="cPhone" required></div>
+                <div class="group"><label>Адрес (СДЭК/Почта)</label><textarea id="cAdr" required></textarea></div>
+                <button type="submit" class="s-btn">Подтвердить заказ</button>
+                <div class="close" onclick="closeOrderModal()">Вернуться назад</div>
+            </form>
+        </div>
+    </div>
+
+    <!-- НИЖНЯЯ НАВИГАЦИЯ -->
+    <div class="bottom-nav">
+        <button class="nav-item active" onclick="location.reload()"><span class="nav-icon">🏠</span>Главная</button>
+        <button class="nav-item" onclick="openFavoritesModal()"><span class="nav-icon">♥</span>Избранное <span id="favBadge"></span></button>
+        <button class="nav-item" onclick="openCartModal()"><span class="nav-icon">🛍️</span>Корзина</button>
+    </div>
+
+    <!-- Всплывающая кнопка оформления -->
+    <div class="bar" id="bar">
+        <button class="b-btn" onclick="openOrderModal()">
+            <span>Оформить заказ</span>
+            <span id="total">0 ₽</span>
+        </button>
+    </div>
+</body>
+</html>

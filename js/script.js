@@ -44,7 +44,7 @@ function hideOverlay(modalId) {
 function addToCart(id) {
     const prod = productsData[id];
     if (!prod) return;
-    const defaultColor = prod.colors[activeColorIndex] ? prod.colors[activeColorIndex].name : "Не указан";
+    const defaultColor = prod.colors[activeColorIndex] ? prod.colors[activeColorIndex].name : "Черный";
     const itemKey = `${id}_${defaultColor}_${activeSize}`;
 
     if (!cart[itemKey]) {
@@ -66,7 +66,6 @@ function addToCart(id) {
 }
 
 function changeQty(id, d) {
-    // Находим первую попавшуюся модификацию этого товара в корзине, чтобы изменить её количество с главной страницы
     let targetKey = null;
     for (let key in cart) {
         if (cart[key].id === id) {
@@ -74,14 +73,14 @@ function changeQty(id, d) {
             break;
         }
     }
-
+    
     if (!targetKey) return;
-
+    
     cart[targetKey].qty += d;
     if (cart[targetKey].qty <= 0) {
         delete cart[targetKey];
     }
-
+    
     syncCardUI(id);
     updateCart();
     if (activeProductId === id) updateModalActionButton();
@@ -93,12 +92,12 @@ function syncCardUI(id) {
     const btn = card.querySelector('.btn');
     const counter = card.querySelector('.counter');
     const qtySpan = card.querySelector('#qty-' + id);
-
+    
     let totalQty = 0;
     for (let key in cart) {
         if (cart[key].id === id) totalQty += cart[key].qty;
     }
-
+    
     if (totalQty === 0) {
         if (btn) btn.style.display = 'block';
         if (counter) counter.style.display = 'none';
@@ -131,7 +130,7 @@ function sortProducts(type, element) {
     const grid = document.getElementById('productsGrid');
     if (!grid) return;
     const cards = Array.from(grid.querySelectorAll('.card'));
-
+    
     document.querySelectorAll('.sort-option').forEach(opt => opt.classList.remove('active'));
     if (element) element.classList.add('active');
 
@@ -151,14 +150,14 @@ function sortProducts(type, element) {
 function toggleFavorite(id) {
     const index = favorites.indexOf(id.toString());
     const cards = document.querySelectorAll('[data-id="' + id + '"]');
-
+    
     if (index === -1) {
         favorites.push(id.toString());
-        cards.forEach(c => { const b = c.querySelector('.fav-btn'); if (b) b.classList.add('active'); });
+        cards.forEach(c => { const b = c.querySelector('.fav-btn'); if(b) b.classList.add('active'); });
         if (activeProductId === id) document.getElementById('modalFavBtn').classList.add('active');
     } else {
         favorites.splice(index, 1);
-        cards.forEach(c => { const b = c.querySelector('.fav-btn'); if (b) b.classList.remove('active'); });
+        cards.forEach(c => { const b = c.querySelector('.fav-btn'); if(b) b.classList.remove('active'); });
         if (activeProductId === id) document.getElementById('modalFavBtn').classList.remove('active');
     }
     updateFavBadge();
@@ -183,7 +182,7 @@ function openProductModal(id) {
     document.getElementById('modalProductPrice').innerText = prod.price.toLocaleString() + ' ₽';
     document.getElementById('modalProductDesc').innerText = prod.desc;
     document.getElementById('descMoreBlock').innerHTML = prod.moreDesc;
-
+    
     document.getElementById('descMoreBlock').style.display = 'none';
     document.getElementById('readMoreBtn').innerText = 'Читать дальше ❯';
 
@@ -204,7 +203,6 @@ function openProductModal(id) {
         colorContainer.appendChild(badge);
     });
 
-    // Исправлено: корректное чтение названия первого цвета из массива
     const initialColorName = prod.colors[0] ? prod.colors[0].name : "Черный";
     document.getElementById('selectedColorText').innerText = initialColorName;
     document.getElementById('specColor').innerText = initialColorName;
@@ -246,7 +244,7 @@ function moveSlide(direction) {
     const prod = productsData[activeProductId];
     if (!prod) return;
     const gallery = prod.colors[activeColorIndex].gallery;
-
+    
     activeSlideIndex += direction;
     if (activeSlideIndex >= gallery.length) activeSlideIndex = 0;
     if (activeSlideIndex < 0) activeSlideIndex = gallery.length - 1;
@@ -261,7 +259,7 @@ function moveSlide(direction) {
 function selectColor(index) {
     activeColorIndex = index;
     activeSlideIndex = 0;
-
+    
     const badges = document.querySelectorAll('#colorPickerContainer .color-badge');
     badges.forEach((badge, idx) => {
         if (idx === index) badge.classList.add('active');
@@ -271,20 +269,20 @@ function selectColor(index) {
     const prod = productsData[activeProductId];
     document.getElementById('selectedColorText').innerText = prod.colors[index].name;
     document.getElementById('specColor').innerText = prod.colors[index].name;
-
+    
     buildGallery();
-    updateModalActionButton();
+    updateModalActionButton(); 
 }
 
 function selectSize(size, element) {
     activeSize = size;
     document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('active'));
     if (element) element.classList.add('active');
-
+    
     document.getElementById('selectedSizeText').innerText = size;
     document.getElementById('specSize').innerText = size;
-
-    updateModalActionButton();
+    
+    updateModalActionButton(); 
 }
 
 function toggleDescription() {
@@ -302,7 +300,7 @@ function toggleDescription() {
 function updateModalActionButton() {
     const btn = document.getElementById('modalActionBtn');
     if (!btn) return;
-
+    
     const prod = productsData[activeProductId];
     if (!prod) return;
     const selectedColor = prod.colors[activeColorIndex] ? prod.colors[activeColorIndex].name : "Черный";
@@ -350,7 +348,7 @@ function changeModalQty(itemKey, d) {
         syncCardUI(cart[itemKey].id);
     }
     updateCart();
-    openCartModal();
+    openCartModal(); 
 }
 
 function openCartModal() {
@@ -358,7 +356,7 @@ function openCartModal() {
     const totalModalSpan = document.getElementById('cartModalTotal');
     if (!container) return;
     container.innerHTML = '';
-
+    
     let total = 0;
     let hasItems = false;
 
@@ -366,7 +364,7 @@ function openCartModal() {
         hasItems = true;
         const item = cart[key];
         total += item.price * item.qty;
-
+        
         const row = document.createElement('div');
         row.className = 'fav-item-row';
         row.innerHTML = `
@@ -406,7 +404,7 @@ function openFavoritesModal() {
         favorites.forEach(id => {
             const prod = productsData[id];
             if (prod) {
-                const initialImg = prod.colors[0] ? prod.colors[0].img : "img/corsetTie.jpg";
+                const initialImg = prod.colors ? prod.colors[0].img : "img/corsetTie.jpg";
                 const row = document.createElement('div');
                 row.className = 'fav-item-row';
                 row.innerHTML = `
@@ -425,6 +423,7 @@ function openFavoritesModal() {
     }
     showOverlay('favoritesModal');
 }
+function closeFavoritesModal() { hideOverlay('favoritesModal'); }
 function sendOrder(event) {
     event.preventDefault();
     const name = document.getElementById('cName').value;
@@ -441,42 +440,32 @@ function sendOrder(event) {
         total += item.price * item.qty;
     }
 
-    // ==== ВАШИ ПРОВЕРЕННЫЕ ДАННЫЕ ====
     const TELEGRAM_BOT_TOKEN = '8680387241:AAE4HzCntMS-7t1wRRM17ZYlMwpdF3p-HJg';
     const TELEGRAM_CHAT_ID = '1415007205';
     const MY_EMAIL = 'kama.brand.shop@mail.ru'; 
-    // ===================================
 
-    // Формируем текст
-    const tgText = `🛍️ *НОВЫЙ ЗАКАЗ*\n\n` +
-                   `👤 *Имя:* ${name}\n` +
-                   `📞 *Телефон:* ${phone}\n` +
-                   `✈️ *Профиль ТГ:* [@${tgUsername}](https://t.me{tgUsername})\n` +
-                   `📧 *E-mail клиента:* ${clientEmail}\n` +
-                   `📍 *Адрес:* ${address}\n\n` +
-                   `📦 *Товары:*${productsText}\n\n` +
-                   `💰 *Итого:* ${total.toLocaleString()} ₽`;
+    // Формируем простой текст БЕЗ спецсимволов Markdown, чтобы кавычки не ломались
+    const text = `🛍️ НОВЫЙ ЗАКАЗ\n\n` +
+                 `👤 Имя: ${name}\n` +
+                 `📞 Телефон: ${phone}\n` +
+                 `✈️ Профиль ТГ: t.me/${tgUsername}\n` +
+                 `📧 E-mail клиента: ${clientEmail}\n` +
+                 `📍 Адрес: ${address}\n\n` +
+                 `📦 Товары:${productsText}\n\n` +
+                 `💰 Итого: ${total.toLocaleString()} ₽`;
 
-    // Отправляем через глобальный стабильный шлюз tgproxy.net
-    fetch(`https://tgproxy.net{TELEGRAM_BOT_TOKEN}/sendMessage`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            chat_id: TELEGRAM_CHAT_ID,
-            text: tgText,
-            parse_mode: 'Markdown'
-        })
-    })
+    // Железобетонный прокси-шлюз allorigins без конфликтов кавычек в URL
+    const targetUrl = `https://telegram.org{TELEGRAM_BOT_TOKEN}/sendMessage?chat_id=${TELEGRAM_CHAT_ID}&text=${encodeURIComponent(text)}`;
+    
+    fetch(`https://allorigins.win{encodeURIComponent(targetUrl)}`)
     .then(response => {
         if (response.ok) {
-            // Параллельный вызов почты для дублирования
+            // Дублирование на почту
             const subject = `Новый заказ от ${name}`;
             const mailBody = `Привет! Оформлен новый заказ.\n\nДанные покупателя:\nИмя: ${name}\nТелефон: ${phone}\nTelegram: @${tgUsername}\nE-mail: ${clientEmail}\nАдрес: ${address}\n\nСостав заказа:${productsText}\n\nИтого: ${total.toLocaleString()} ₽`;
             window.location.href = `mailto:${MY_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(mailBody)}`;
 
-            alert(`Спасибо, ${name}! Заказ успешно оформлен и отправлен в Telegram.`);
+            alert(`Спасибо, ${name}! Заказ успешно оформлен и отправлен менеджеру в Telegram.`);
             
             cart = {};
             for (let id in productsData) {
@@ -485,13 +474,12 @@ function sendOrder(event) {
             if (typeof updateCart === 'function') updateCart();
             if (typeof closeOrderModal === 'function') closeOrderModal();
         } else {
-            // Если и этот шлюз вернул ошибку, выводим её статус
-            alert(`Ошибка сервера Telegram (Код: ${response.status}). Будет открыта форма почты.`);
-            window.location.href = `mailto:${MY_EMAIL}?subject=Заказ&body=${encodeURIComponent(tgText)}`;
+            alert(`Ошибка шлюза Telegram. Будет открыта почта.`);
+            window.location.href = `mailto:${MY_EMAIL}?subject=Заказ&body=${encodeURIComponent(text)}`;
         }
     })
     .catch(error => {
-        console.error('Ошибка автоматики:', error);
-        window.location.href = `mailto:${MY_EMAIL}?subject=Заказ&body=${encodeURIComponent(tgText)}`;
+        console.error('Ошибка отправки:', error);
+        window.location.href = `mailto:${MY_EMAIL}?subject=Заказ&body=${encodeURIComponent(text)}`;
     });
 }

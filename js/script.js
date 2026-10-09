@@ -40,11 +40,11 @@ function hideOverlay(modalId) {
     if (el) el.classList.add('hidden');
 }
 
-// Функции корзины в сетке
+// Функции корзины в сетке (ИСПРАВЛЕНО: Чтение первого элемента массива colors через)
 function addToCart(id) {
     const prod = productsData[id];
     if (!prod) return;
-    const defaultColor = prod.colors[activeColorIndex] ? prod.colors[activeColorIndex].name : "Черный";
+    const defaultColor = (prod.colors && prod.colors[0]) ? prod.colors[0].name : "Черный";
     const itemKey = `${id}_${defaultColor}_${activeSize}`;
 
     if (!cart[itemKey]) {
@@ -168,7 +168,7 @@ function updateFavBadge() {
     if (badge) badge.innerText = favorites.length > 0 ? '(' + favorites.length + ')' : '';
 }
 
-// Открытие детальной модалки товара
+// Открытие детальной модалки товара (ИСПРАВЛЕНО: Чтение первого элемента массива colors через)
 function openProductModal(id) {
     const prod = productsData[id];
     if (!prod) return;
@@ -203,7 +203,7 @@ function openProductModal(id) {
         colorContainer.appendChild(badge);
     });
 
-    const initialColorName = prod.colors ? prod.colors.name : "Черный";
+    const initialColorName = (prod.colors && prod.colors[0]) ? prod.colors[0].name : "Черный";
     document.getElementById('selectedColorText').innerText = initialColorName;
     document.getElementById('specColor').innerText = initialColorName;
 
@@ -406,7 +406,7 @@ function openFavoritesModal() {
         favorites.forEach(id => {
             const prod = productsData[id];
             if (prod) {
-                const initialImg = prod.colors ? prod.colors.img : "img/corsetTie.jpg";
+                const initialImg = (prod.colors && prod.colors[0]) ? prod.colors[0].img : "img/corsetTie.jpg";
                 const row = document.createElement('div');
                 row.className = 'fav-item-row';
                 row.innerHTML = `
@@ -427,6 +427,7 @@ function openFavoritesModal() {
 }
 function closeFavoritesModal() { hideOverlay('favoritesModal'); }
 
+// Прямой POST-запрос FormData напрямую к API Telegram без прокси и шлюзов
 function sendOrder(event) {
     event.preventDefault();
     const name = document.getElementById('cName').value;
@@ -457,7 +458,7 @@ function sendOrder(event) {
         method: 'POST',
         body: formData
     })
-    .then(response => {
+    .then(() => {
         const subject = `Новый заказ от ${name}`;
         const mailBody = `Привет! Оформлен новый заказ.\n\nДанные покупателя:\nИмя: ${name}\nТелефон: ${phone}\nTelegram: @${tgUsername}\nE-mail: ${clientEmail}\nАдрес: ${address}\n\nСостав заказа:${productsText}\n\nИтого: ${total.toLocaleString()} ₽`;
         window.location.href = `mailto:${MY_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(mailBody)}`;

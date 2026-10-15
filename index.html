@@ -152,7 +152,7 @@
     <div class="overlay hidden" id="orderModal" onclick="closeOrderModal()">
         <div class="modal" onclick="event.stopPropagation();">
             <div style="font-weight:bold; font-size:18px; margin-bottom:15px;">📦 Оформление доставки</div>
-            <form id="orderForm" onsubmit="sendOrder(event)">
+            <form action="https://formspree.io/f/maeqaopp" method="POST">
                 <div class="group"><label>Ваше Имя</label><input type="text" id="cName" required></div>
                 <div class="group"><label>Телефон</label><input type="tel" id="cPhone" required></div>
                 <div class="group"><label>Ваш Telegram (например, @username)</label><input type="text" id="cTelegram" placeholder="@username" required></div>

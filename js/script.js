@@ -29,7 +29,7 @@ let activeColorIndex = 0;
 let activeSlideIndex = 0;
 let activeSize = "XS";
 
-// Утилиты оверлеев
+// Утилиты окон
 function showOverlay(modalId) {
     const el = document.getElementById(modalId);
     if (el) el.classList.remove('hidden');
@@ -46,12 +46,12 @@ function openCartModal() { showOverlay('cartModal'); renderCart(); }
 function closeCartModal() { hideOverlay('cartModal'); }
 function closeProductModal() { hideOverlay('productModal'); activeProductId = null; }
 
-// Добавление в корзину с безопасной проверкой цвета
+// Функции корзины
 function addToCart(id) {
     const prod = productsData[id];
     if (!prod) return;
     
-    // ИСПРАВЛЕНО: Безопасное извлечение имени первого цвета из массива
+    // ИСПРАВЛЕНО: Безопасное чтение первого цвета из массива через индекс [0]
     const defaultColor = (prod.colors && prod.colors[0]) ? prod.colors[0].name : "Черный";
     const itemKey = `${id}_${defaultColor}_${activeSize}`;
 
@@ -94,7 +94,6 @@ function changeQty(id, d) {
     if (activeProductId === id) updateModalActionButton();
 }
 
-// Безопасная синхронизация интерфейса карточек товаров
 function syncCardUI(id) {
     const card = document.querySelector(`[data-id="${id}"]`);
     if (!card) return;
@@ -124,6 +123,8 @@ function updateCart() {
         total += cart[key].price * cart[key].qty;
         hasItems = true;
     }
+    
+    // ИСПРАВЛЕНО: Защита от null, если элементов bar и total нет на странице
     const bar = document.getElementById('bar');
     const totalSpan = document.getElementById('total');
     if (bar) bar.style.display = hasItems ? 'block' : 'none';
@@ -133,7 +134,7 @@ function updateCart() {
     if (modalTotal) modalTotal.innerText = total.toLocaleString() + ' ₽';
 }
 
-// Сортировка товаров
+// Сортировка
 function toggleSortMenu() {
     const dropdown = document.getElementById('sortDropdown');
     if (dropdown) dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
@@ -175,7 +176,7 @@ function toggleFavorite(id) {
     }
 }
 
-// Безопасное открытие модального окна товара
+// Детальная модалка товара
 function openProductModal(id) {
     const prod = productsData[id];
     if (!prod) return;
@@ -214,7 +215,8 @@ function openProductModal(id) {
         });
     }
 
-    const initialColorName = prod.colors[0]?.name || "Черный";
+    // ИСПРАВЛЕНО: Корректное чтение первого цвета из массива через [0]
+    const initialColorName = (prod.colors && prod.colors[0]) ? prod.colors[0].name : "Черный";
     document.getElementById('selectedColorText').innerText = initialColorName;
     document.getElementById('specColor').innerText = initialColorName;
 
@@ -268,10 +270,10 @@ function toggleDescription() {
         btn.innerText = 'Читать дальше ❯';
     }
 }
-
+// Галерея слайдов в модалке товара
 function buildGallery() {
     const prod = productsData[activeProductId];
-    if (!prod || !prod.colors[activeColorIndex]) return;
+    if (!prod || !prod.colors || !prod.colors[activeColorIndex]) return;
     const gallery = prod.colors[activeColorIndex].gallery;
     const container = document.getElementById('modalSlides');
     if (!container) return;
@@ -287,18 +289,19 @@ function buildGallery() {
 
 function moveSlide(d) {
     const prod = productsData[activeProductId];
-    if (!prod || !prod.colors[activeColorIndex]) return;
+    if (!prod || !prod.colors || !prod.colors[activeColorIndex]) return;
     const gallery = prod.colors[activeColorIndex].gallery;
     activeSlideIndex = (activeSlideIndex + d + gallery.length) % gallery.length;
     buildGallery();
 }
 
+// Управление состоянием кнопки добавления в модальном окне
 function updateModalActionButton() {
     const btn = document.getElementById('modalActionBtn');
     if (!btn) return;
     const prod = productsData[activeProductId];
-    if (!prod) return;
-    const colorName = prod.colors[activeColorIndex]?.name || "Черный";
+    if (!prod || !prod.colors || !prod.colors[activeColorIndex]) return;
+    const colorName = prod.colors[activeColorIndex].name || "Черный";
     const itemKey = `${activeProductId}_${colorName}_${activeSize}`;
     
     if (cart[itemKey]) {
@@ -310,8 +313,8 @@ function updateModalActionButton() {
 
 function handleModalAction() {
     const prod = productsData[activeProductId];
-    if (!prod) return;
-    const colorName = prod.colors[activeColorIndex]?.name || "Черный";
+    if (!prod || !prod.colors || !prod.colors[activeColorIndex]) return;
+    const colorName = prod.colors[activeColorIndex].name || "Черный";
     const itemKey = `${activeProductId}_${colorName}_${activeSize}`;
     
     if (!cart[itemKey]) {
@@ -332,6 +335,7 @@ function handleModalAction() {
     updateModalActionButton();
 }
 
+// Отображение списка товаров в корзине
 function renderCart() {
     const container = document.getElementById('cartListContainer');
     if (!container) return;
@@ -375,6 +379,7 @@ function changeQtyByKey(key, d) {
     renderCart();
 }
 
+// Сборка структуры заказа (Текст, который придет на почту)
 function prepareOrderData() {
     const inputDetails = document.getElementById('cCartDetails');
     if (!inputDetails) return;
@@ -401,7 +406,11 @@ function prepareOrderData() {
     inputDetails.value = textDetails;
 }
 
+// Отправка формы на Formspree без перезагрузки и очистка корзины
 document.addEventListener('DOMContentLoaded', () => {
+    // Безопасный первичный запуск
+    updateCart();
+
     const orderForm = document.getElementById('orderForm');
     if (orderForm) {
         orderForm.addEventListener('submit', function(event) {
@@ -423,11 +432,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     updateCart();
                     closeOrderModal();
                 } else {
-                    alert('Произошла ошибка при отправке.');
+                    alert('Произошла ошибка при отправке. Пожалуйста, проверьте форму.');
                 }
             }).catch(error => {
-                alert('Ошибка сети.');
+                alert('Ошибка сети. Проверьте соединение.');
             });
         });
     }
 });
+

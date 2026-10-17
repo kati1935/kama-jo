@@ -40,7 +40,14 @@ function hideOverlay(modalId) {
     if (el) el.classList.add('hidden');
 }
 
-// Функции корзины в сетке (ИСПРАВЛЕНО: Чтение первого элемента массива colors через)
+function openOrderModal() { showOverlay('orderModal'); prepareOrderData(); }
+function closeOrderModal() { hideOverlay('orderModal'); }
+function openCartModal() { showOverlay('cartModal'); renderCart(); }
+function closeCartModal() { hideOverlay('cartModal'); }
+function openProductModal() { showOverlay('productModal'); } // Переопределена ниже с логикой
+function closeProductModal() { hideOverlay('productModal'); }
+
+// Функции корзины в сетке
 function addToCart(id) {
     const prod = productsData[id];
     if (!prod) return;
@@ -114,10 +121,15 @@ function updateCart() {
         total += cart[key].price * cart[key].qty;
         hasItems = true;
     }
+    // Если на вашей странице есть плавающая плашка корзины (id="bar" и id="total")
     const bar = document.getElementById('bar');
     const totalSpan = document.getElementById('total');
     if (bar) bar.style.display = hasItems ? 'block' : 'none';
     if (totalSpan) totalSpan.innerText = total.toLocaleString() + ' ₽';
+    
+    // Обновление итоговой суммы в самой модалке корзины
+    const modalTotal = document.getElementById('cartModalTotal');
+    if (modalTotal) modalTotal.innerText = total.toLocaleString() + ' ₽';
 }
 
 // Сортировка и меню
@@ -168,7 +180,7 @@ function updateFavBadge() {
     if (badge) badge.innerText = favorites.length > 0 ? '(' + favorites.length + ')' : '';
 }
 
-// Открытие детальной модалки товара (ИСПРАВЛЕНО: Чтение первого элемента массива colors через)
+// Открытие детальной модалки товара
 function openProductModal(id) {
     const prod = productsData[id];
     if (!prod) return;
@@ -218,262 +230,107 @@ function openProductModal(id) {
     showOverlay('productModal');
 }
 
-function closeProductModal() {
-    hideOverlay('productModal');
-    activeProductId = null;
-}
-
-// Галерея внутри карточки
-function buildGallery() {
-    const prod = productsData[activeProductId];
-    if (!prod) return;
-    const gallery = prod.colors[activeColorIndex].gallery;
-    const slidesContainer = document.getElementById('modalSlides');
-    if (!slidesContainer) return;
-    slidesContainer.innerHTML = '';
-
-    gallery.forEach((src, index) => {
-        const img = document.createElement('img');
-        img.src = src;
-        img.className = 'modal-img' + (index === activeSlideIndex ? ' active' : '');
-        slidesContainer.appendChild(img);
-    });
-}
-
-function moveSlide(direction) {
-    const prod = productsData[activeProductId];
-    if (!prod) return;
-    const gallery = prod.colors[activeColorIndex].gallery;
-    
-    activeSlideIndex += direction;
-    if (activeSlideIndex >= gallery.length) activeSlideIndex = 0;
-    if (activeSlideIndex < 0) activeSlideIndex = gallery.length - 1;
-
-    const imgs = document.querySelectorAll('#modalSlides .modal-img');
-    imgs.forEach((img, idx) => {
-        if (idx === activeSlideIndex) img.classList.add('active');
-        else img.classList.remove('active');
-    });
-}
-
+// Выбор опций в модалке
 function selectColor(index) {
     activeColorIndex = index;
-    activeSlideIndex = 0;
-    
-    const badges = document.querySelectorAll('#colorPickerContainer .color-badge');
-    badges.forEach((badge, idx) => {
-        if (idx === index) badge.classList.add('active');
-        else badge.classList.remove('active');
-    });
-
     const prod = productsData[activeProductId];
-    if (prod && prod.colors && prod.colors[index]) {
-        document.getElementById('selectedColorText').innerText = prod.colors[index].name;
-        document.getElementById('specColor').innerText = prod.colors[index].name;
-    }
+    const color = prod.colors[index];
     
+    document.getElementById('selectedColorText').innerText = color.name;
+    document.getElementById('specColor').innerText = color.name;
+    
+    document.querySelectorAll('.color-badge').forEach((b, i) => {
+        if(i === index) b.classList.add('active');
+        else b.classList.remove('active');
+    });
+    
+    activeSlideIndex = 0;
     buildGallery();
-    updateModalActionButton();
 }
 
 function selectSize(size, element) {
     activeSize = size;
-    document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('active'));
-    if (element) element.classList.add('active');
-    
     document.getElementById('selectedSizeText').innerText = size;
     document.getElementById('specSize').innerText = size;
     
-    updateModalActionButton(); 
+    document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('active'));
+    if(element) element.classList.add('active');
+    updateModalActionButton();
 }
 
 function toggleDescription() {
     const block = document.getElementById('descMoreBlock');
     const btn = document.getElementById('readMoreBtn');
-    if (block.style.display === 'none') {
+    if(block.style.display === 'none') {
         block.style.display = 'block';
-        btn.innerText = 'Скрыть описание ❮';
+        btn.innerText = 'Свернуть ❮';
     } else {
         block.style.display = 'none';
         btn.innerText = 'Читать дальше ❯';
     }
 }
 
+// Галерея слайдов
+function buildGallery() {
+    const prod = productsData[activeProductId];
+    if (!prod || !prod.colors[activeColorIndex]) return;
+    const gallery = prod.colors[activeColorIndex].gallery;
+    const container = document.getElementById('modalSlides');
+    if (!container) return;
+    container.innerHTML = '';
+    
+    gallery.forEach((src, idx) => {
+        const img = document.createElement('img');
+        img.src = src;
+        img.className = 'modal-img' + (idx === activeSlideIndex ? ' active' : '');
+        container.appendChild(img);
+    });
+}
+
+function moveSlide(d) {
+    const prod = productsData[activeProductId];
+    if (!prod || !prod.colors[activeColorIndex]) return;
+    const gallery = prod.colors[activeColorIndex].gallery;
+    activeSlideIndex = (activeSlideIndex + d + gallery.length) % gallery.length;
+    buildGallery();
+}
+
+// Действия в карточке товара
 function updateModalActionButton() {
     const btn = document.getElementById('modalActionBtn');
     if (!btn) return;
-    
     const prod = productsData[activeProductId];
     if (!prod) return;
-    const selectedColor = prod.colors[activeColorIndex] ? prod.colors[activeColorIndex].name : "Черный";
-    const itemKey = `${activeProductId}_${selectedColor}_${activeSize}`;
-
+    const colorName = prod.colors[activeColorIndex].name;
+    const itemKey = `${activeProductId}_${colorName}_${activeSize}`;
+    
     if (cart[itemKey]) {
-        btn.innerText = `В корзине (${cart[itemKey].qty} шт.) — Добавить ещё`;
+        btn.innerText = `В корзине (${cart[itemKey].qty} шт.) — Добавить еще`;
     } else {
         btn.innerText = 'Добавить в корзину';
     }
 }
 
 function handleModalAction() {
-    if (!activeProductId) return;
     const prod = productsData[activeProductId];
-    const selectedColor = prod.colors[activeColorIndex].name;
-    const itemKey = `${activeProductId}_${selectedColor}_${activeSize}`;
-
+    if (!prod) return;
+    const colorName = prod.colors[activeColorIndex].name;
+    const itemKey = `${activeProductId}_${colorName}_${activeSize}`;
+    
     if (!cart[itemKey]) {
         cart[itemKey] = {
             id: activeProductId,
             name: prod.name,
             price: prod.price,
-            color: selectedColor,
+            color: colorName,
             size: activeSize,
             qty: 1
         };
     } else {
         cart[itemKey].qty += 1;
     }
-
+    
     syncCardUI(activeProductId);
     updateCart();
     updateModalActionButton();
-}
-
-function changeModalQty(itemKey, d) {
-    if (!cart[itemKey]) return;
-    cart[itemKey].qty += d;
-    if (cart[itemKey].qty <= 0) {
-        const originalId = cart[itemKey].id;
-        delete cart[itemKey];
-        syncCardUI(originalId);
-    } else {
-        syncCardUI(cart[itemKey].id);
-    }
-    updateCart();
-    openCartModal(); 
-}
-
-function openCartModal() {
-    const container = document.getElementById('cartListContainer');
-    const totalModalSpan = document.getElementById('cartModalTotal');
-    if (!container) return;
-    container.innerHTML = '';
-    
-    let total = 0;
-    let hasItems = false;
-
-    for (let key in cart) {
-        hasItems = true;
-        const item = cart[key];
-        total += item.price * item.qty;
-        
-        const row = document.createElement('div');
-        row.className = 'fav-item-row';
-        row.innerHTML = `
-            <div style="display:flex; flex-direction:column; gap:2px; text-align:left;">
-                <div style="font-weight:600;font-size:14px;color:#fff;">${item.name}</div>
-                <div style="font-size:12px;color:var(--hint);">Цвет: ${item.color} | Размер: ${item.size}</div>
-                <div style="font-size:13px;color:#3182ce;font-weight:600;">${item.price.toLocaleString()} ₽</div>
-            </div>
-            <div style="display:flex; align-items:center; gap:8px;">
-                <button onclick="changeModalQty('${key}', -1)" style="padding:4px 10px; background:#2c2c2e; border:none; color:#fff; border-radius:6px; cursor:pointer;">-</button>
-                <span style="color:#fff;">${item.qty}</span>
-                <button onclick="changeModalQty('${key}', 1)" style="padding:4px 10px; background:#2c2c2e; border:none; color:#fff; border-radius:6px; cursor:pointer;">+</button>
-            </div>
-        `;
-        container.appendChild(row);
-    }
-
-    if (!hasItems) {
-        container.innerHTML = '<div style="color:var(--hint);text-align:center;padding:20px;">Корзина пуста</div>';
-    }
-    if (totalModalSpan) totalModalSpan.innerText = total.toLocaleString() + ' ₽';
-    showOverlay('cartModal');
-}
-
-function closeCartModal() { hideOverlay('cartModal'); }
-function openOrderModal() { showOverlay('orderModal'); }
-function closeOrderModal() { hideOverlay('orderModal'); }
-
-function openFavoritesModal() {
-    const container = document.getElementById('favoritesListContainer');
-    if (!container) return;
-    container.innerHTML = '';
-
-    if (favorites.length === 0) {
-        container.innerHTML = '<div style="color:var(--hint);text-align:center;padding:20px;">Список пуст</div>';
-    } else {
-        favorites.forEach(id => {
-            const prod = productsData[id];
-            if (prod) {
-                const initialImg = (prod.colors && prod.colors[0]) ? prod.colors[0].img : "img/corsetTie.jpg";
-                const row = document.createElement('div');
-                row.className = 'fav-item-row';
-                row.innerHTML = `
-                    <div onclick="closeFavoritesModal(); openProductModal('${id}')" style="cursor:pointer; display:flex; align-items:center; gap:10px;">
-                        <img src="${initialImg}" style="width:40px; height:40px; border-radius:8px; object-fit:cover;">
-                        <div style="text-align:left;">
-                            <div style="font-weight:600;font-size:14px;color:#fff;">${prod.name}</div>
-                            <div style="font-size:13px;color:var(--hint);">${prod.price.toLocaleString()} ₽</div>
-                        </div>
-                    </div>
-                    <button onclick="toggleFavorite('${id}'); openFavoritesModal();" style="background:none;border:none;color:#ff3b30;font-size:18px;cursor:pointer;">✕</button>
-                `;
-                container.appendChild(row);
-            }
-        });
-    }
-    showOverlay('favoritesModal');
-}
-function closeFavoritesModal() { hideOverlay('favoritesModal'); }
-
-// Прямой POST-запрос FormData напрямую к API Telegram без прокси и шлюзов
-function sendOrder(event) {
-    event.preventDefault();
-    const name = document.getElementById('cName').value;
-    const phone = document.getElementById('cPhone').value;
-    const tgUsername = document.getElementById('cTelegram').value.replace('@', ''); 
-    const clientEmail = document.getElementById('cEmail').value;
-    const address = document.getElementById('cAdr').value;
-
-    let productsText = "";
-    let total = 0;
-    for (let key in cart) {
-        const item = cart[key];
-        productsText += `\n• ${item.name} (Цвет: ${item.color}, Размер: ${item.size}) — ${item.qty} шт.`;
-        total += item.price * item.qty;
-    }
-
-    const TELEGRAM_BOT_TOKEN = '8680387241:AAE4HzCntMS-7t1wRRM17ZYlMwpdF3p-HJg';
-    const TELEGRAM_CHAT_ID = '1415007205';
-    const MY_EMAIL = 'kama.brand.shop@mail.ru'; 
-
-    const text = `🛍️ НОВЫЙ ЗАКАЗ\n\n👤 Имя: ${name}\n📞 Телефон: ${phone}\n✈️ Профиль ТГ: t.me/${tgUsername}\n📧 E-mail клиента: ${clientEmail}\n📍 Адрес: ${address}\n\n📦 Товары:${productsText}\n\n💰 Итого: ${total.toLocaleString()} ₽`;
-
-    const formData = new FormData();
-    formData.append('chat_id', TELEGRAM_CHAT_ID);
-    formData.append('text', text);
-
-    fetch(`https://telegram.org{TELEGRAM_BOT_TOKEN}/sendMessage`, {
-        method: 'POST',
-        body: formData
-    })
-    .then(() => {
-        const subject = `Новый заказ от ${name}`;
-        const mailBody = `Привет! Оформлен новый заказ.\n\nДанные покупателя:\nИмя: ${name}\nТелефон: ${phone}\nTelegram: @${tgUsername}\nE-mail: ${clientEmail}\nАдрес: ${address}\n\nСостав заказа:${productsText}\n\nИтого: ${total.toLocaleString()} ₽`;
-        window.location.href = `mailto:${MY_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(mailBody)}`;
-
-        alert(`Спасибо, ${name}! Заказ успешно оформлен и отправлен менеджеру в Telegram.`);
-        
-        cart = {};
-        for (let id in productsData) {
-            if (typeof syncCardUI === 'function') syncCardUI(id);
-        }
-        if (typeof updateCart === 'function') updateCart();
-        if (typeof closeOrderModal === 'function') closeOrderModal();
-    })
-    .catch(error => {
-        console.error('Ошибка отправки:', error);
-        window.location.href = `mailto:${MY_EMAIL}?subject=Заказ&body=${encodeURIComponent(text)}`;
-    });
 }

@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Brand Shop</title>
     <link rel="stylesheet" href="css/style.css">
-    <script src="js/script.js" defer></script>
 </head>
 <body>
     <!-- Шапка интернет-магазина -->
@@ -148,35 +147,36 @@
         </div>
     </div>
 
-    <!-- Модалка оформления заказа -->
+        <!-- Модалка оформления заказа -->
     <div class="overlay hidden" id="orderModal" onclick="closeOrderModal()">
         <div class="modal" onclick="event.stopPropagation();">
             <div style="font-weight:bold; font-size:18px; margin-bottom:15px;">📦 Оформление доставки</div>
-            <form action="https://formspree.io/f/maeqaopp" method="POST">
-                <div class="group"><label>Ваше Имя</label><input type="text" id="cName" required></div>
-                <div class="group"><label>Телефон</label><input type="tel" id="cPhone" required></div>
-                <div class="group"><label>Ваш Telegram (например, @username)</label><input type="text" id="cTelegram" placeholder="@username" required></div>
-                <div class="group"><label>Ваш E-mail</label><input type="email" id="cEmail" placeholder="example@mail.ru" required></div>
-                <div class="group"><label>Адрес (СДЭК/Почта)</label><textarea id="cAdr" required></textarea></div>
-                
-                <button type="submit" class="s-btn" style="margin-top:10px;">Подтвердить заказ</button>
-                <div class="close" onclick="closeOrderModal()">Вернуться назад</div>
+            
+            <!-- Форма отправки на Formspree -->
+            <form action="https://formspree.io/f/maeqaopp" method="POST" id="orderForm">
+                <div class="group">
+                    <label for="cName">Ваше Имя</label>
+                    <input type="text" id="cName" name="Имя" required>
+                </div>
+                <div class="group">
+                    <label for="cPhone">Телефон</label>
+                    <input type="tel" id="cPhone" name="Телефон" required>
+                </div>
+                <div class="group">
+                    <label for="cTelegram">Ваш Telegram</label>
+                    <input type="text" id="cTelegram" name="Telegram" placeholder="@username" required>
+                </div>
+
+                <!-- Скрытое поле для передачи состава корзины и итоговой суммы -->
+                <input type="hidden" id="cCartDetails" name="Детали заказа">
+
+                <!-- Кнопка подтверждения заказа -->
+                <button type="submit" class="s-btn" style="margin-top:15px; width: 100%;">Подтвердить и оплатить</button>
             </form>
+
+            <div class="close" onclick="closeOrderModal()" style="margin-top: 15px; cursor: pointer; text-align: center; color: #888;">Закрыть</div>
         </div>
     </div>
 
-    <!-- НИЖНЯЯ НАВИГАЦИЯ -->
-    <div class="bottom-nav">
-        <button class="nav-item active" onclick="location.reload()"><span class="nav-icon">🏠</span>Главная</button>
-        <button class="nav-item" onclick="openFavoritesModal()"><span class="nav-icon">♥</span>Избранное <span id="favBadge"></span></button>
-        <button class="nav-item" onclick="openCartModal()"><span class="nav-icon">🛍️</span>Корзина</button>
-    </div>
-
-    <div class="bar" id="bar">
-        <button class="b-btn" onclick="openOrderModal()">
-            <span>Оформить заказ</span>
-            <span id="total">0 ₽</span>
-        </button>
-    </div>
 </body>
 </html>

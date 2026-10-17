@@ -54,13 +54,13 @@ body {
 .nav-item { background: none; border: none; color: var(--hint); font-size: 11px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; font-weight: 500; }
 .nav-icon { font-size: 22px; color: var(--hint); }
 .nav-item.active { color: #2b6cb0; }
-.nav-item.active .nav-icon { color: #2b6cb0; } /* Исправлен критический обрыв скобки */
+.nav-item.active .nav-icon { color: #2b6cb0; }
 
 /* Кнопка оформления заказа */
 .bar { position: fixed; bottom: 75px; left: 50%; transform: translateX(-50%); width: 100%; max-width: 468px; box-sizing: border-box; padding: 0 16px; display: none; z-index: 99; }
 .b-btn { width: 100%; background: #25d366; color: #fff; border: none; border-radius: 14px; padding: 16px; display: flex; justify-content: space-between; font-weight: bold; font-size: 16px; box-shadow: 0 4px 16px rgba(0,0,0,0.5); cursor: pointer; }
 
-/* Очищенная исправленная логика скрытия окон оверлеев */
+/* Логика скрытия окон оверлеев */
 .overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85); display: flex; justify-content: center; align-items: flex-end; z-index: 1000; }
 .overlay.hidden { display: none; } 
 
@@ -102,34 +102,21 @@ body {
 
 .size-picker { display: flex; gap: 8px; margin-bottom: 10px; }
 .size-btn { flex: 1; background: #222; border: 1px solid #2d2d2d; border-radius: 12px; padding: 13px 0; color: #fff; font-weight: 600; font-size: 14px; cursor: pointer; }
-.size-btn.active { border-color: #2b6cb0; background: #222; } /* Полностью восстановлен поврежденный селектор */
-/* Фиксированная нижняя панель для кнопки в модальном окне */
-.modal-action-wrapper { 
-    position: sticky; 
-    bottom: 0; 
-    left: 0;
-    width: 100%;
-    background: #161616; 
-    padding: 12px 0 20px 0; 
-    box-sizing: border-box;
-    z-index: 110;
-}
+.size-btn.active { border-color: #2b6cb0; background: #2b6cb0; color: #fff; }
 
-/* Большая скруглённая синяя кнопка во всю ширину */
-.modal-main-action-btn { 
-    width: 100%; 
-    background: linear-gradient(135deg, #3182ce, #2b6cb0); /* Симпатичный градиент */
-    color: #fff; 
-    border: none; 
-    border-radius: 14px; /* Круглые углы как на скрине */
-    padding: 16px 20px; /* Увеличили внутренние отступы */
-    font-weight: bold; 
-    font-size: 16px; 
-    cursor: pointer; 
-    box-shadow: 0 4px 12px rgba(43, 108, 176, 0.3);
-    transition: transform 0.1s ease;
-}
+/* Дополнительные стили для модалки деталей товара */
+.sizes-table-btn { background: none; border: none; color: var(--hint); font-size: 13px; cursor: pointer; text-decoration: underline; padding: 4px 0; }
+.modal-product-info { padding: 10px 4px; }
+.modal-product-info h2 { font-size: 20px; margin: 0 0 8px 0; font-weight: 600; }
+.modal-product-price { font-size: 18px; font-weight: 700; color: #fff; margin-bottom: 18px; }
+.description-block h3, .tech-specs h3 { font-size: 14px; color: var(--hint); font-weight: 500; margin: 0 0 8px 0; }
+.description-block p { font-size: 14px; line-height: 1.5; color: #e5e5ea; margin: 0 0 10px 0; }
+.read-more-btn { background: none; border: none; color: #2b6cb0; font-size: 13px; cursor: pointer; padding: 0; }
 
-.modal-main-action-btn:active {
-    transform: scale(0.98); /* Легкий эффект нажатия */
-}
+.tech-specs { margin-top: 20px; }
+.spec-row { display: flex; justify-content: space-between; font-size: 14px; padding: 10px 0; border-bottom: 1px solid #222; }
+.spec-row span:first-child { color: var(--hint); }
+
+.modal-action-wrapper { position: absolute; bottom: 0; left: 0; width: 100%; background: #161616; padding: 16px; box-sizing: border-box; border-top: 1px solid #222; }
+.modal-main-action-btn { width: 100%; background: #2b6cb0; color: #fff; border: none; border-radius: 14px; padding: 16px; font-weight: bold; font-size: 16px; cursor: pointer; }
+.close-txt-btn { text-align: center; color: var(--hint); margin-top: 25px; cursor: pointer; font-size: 14px; }
